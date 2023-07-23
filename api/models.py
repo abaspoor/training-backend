@@ -1,4 +1,12 @@
 from django.db import models
+from django.contrib.auth.models import User
+
+def upload_path_handler(instance, filename):
+    return "avatars/{id}/{file}".format(id=instance.user.id, file=filename)
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to=upload_path_handler, blank=True)
 
 class Group(models.Model):
     name = models.CharField(max_length=32, null=False, unique=False)
