@@ -11,5 +11,5 @@ router.register(r'events', EventViewset)
 
 urlpatterns = [
     re_path(r'^', include(router.urls)),
-    path('authenticate/', views.CustonObtainAuthTooken.as_view())
+    path('authenticate/', views.CustomObtainAuthTooken.as_view())
 ]

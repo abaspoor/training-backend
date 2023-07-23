@@ -26,9 +26,9 @@ class EventViewset(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
 
-class CustonObtainAuthTooken(ObtainAuthToken):
+class CustomObtainAuthTooken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
-        response = super(CustonObtainAuthTooken,self).post(request, *args, **kwargs)
+        response = super(CustomObtainAuthTooken,self).post(request, *args, **kwargs)
         token = Token.objects.get(key=response.data['token'])
         user = User.objects.get(id = token.user_id)
         userSerilizer = UserSerializer(user, many=False)
