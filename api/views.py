@@ -7,6 +7,10 @@ from django.contrib.auth.models import User
 from .models import Group , Event, UserProfile
 from .serielizers import GroupSerializer , EventSerializer , GroupFullSerializer, UserSerializer, UserProfileSerializer
 
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
 class UserProfileViewset(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
     serializer_class =UserProfileSerializer
