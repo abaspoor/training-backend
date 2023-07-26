@@ -1,5 +1,5 @@
 from . import views
-from .views import GroupViewset , EventViewset, UserViewSet
+from .views import GroupViewset , EventViewset, UserViewSet, UserProfileViewset
 from django.conf.urls import include
 from rest_framework import routers
 from django.urls import path,re_path
@@ -9,6 +9,7 @@ router  = routers.DefaultRouter()
 router.register(r'groups', GroupViewset)
 router.register(r'events', EventViewset)
 router.register(r'users', UserViewSet)
+router.register(r'profile', UserProfileViewset)
 
 urlpatterns = [
     re_path(r'^', include(router.urls)),
