@@ -13,7 +13,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
     @action(methods=['PUT'], detail=True, serializer_class=ChangePasswordSerializer)
-    def change_pass(self,request , pk):
+    def change_pass(self, request, pk):
         user = User.objects.get(pk=pk)
         serializer = ChangePasswordSerializer(data=request.data)
 
@@ -21,7 +21,8 @@ class UserViewSet(viewsets.ModelViewSet):
             if not user.check_password(serializer.data.get('old_password')):
                 return Response({'message': 'Wrong old Password'}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                user.set_password(serializer.data.get(serializer.data.get('new_password')))
+                user.set_password(serializer.data.get(('new_password')))
+                user.save()
                 return Response({'message': 'Password Updated'},status.HTTP_200_OK)
 
 class UserProfileViewset(viewsets.ModelViewSet):
