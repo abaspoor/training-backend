@@ -10,6 +10,9 @@ class UserProfile(models.Model):
     is_premium = models.BooleanField(default=False)
     bio = models.CharField(max_length=256,blank=True, null=True)
 
+class Location(models.Model):
+    user = models.OneToOneField(User,related_name='location',on_delete=models.CASCADE)
+    location = models.CharField(max_length=100,blank=True,null=True)
 
 class Group(models.Model):
     name = models.CharField(max_length=32, null=False, unique=False)
@@ -35,3 +38,10 @@ class Member(models.Model):
     class Meta:
         unique_together= (('user','group'),)
         index_together = (('user', 'group'),)
+
+
+class Comment(models.Model):
+    group = models.ForeignKey(Group,related_name='comments', on_delete=models.CASCADE)
+    user = models.ForeignKey(Group, related_name='user_comments', on_delete=models.CASCADE)
+    description = models.CharField(max_length=256,null=False, unique=False)
+    time = models.DateTimeField(auto_now_add=True)

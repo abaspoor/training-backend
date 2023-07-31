@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
-from .models import Group, Event, UserProfile, Member
+from .models import Group, Event, UserProfile, Member, Comment, Location
 from django.contrib.auth.models import User
 import re
 class ChangePasswordSerializer(serializers.Serializer):
@@ -14,11 +14,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = ('id', 'image', 'is_premium', 'bio')
 
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
+        fields = ('location',)
+
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
+    location = LocationSerializer()
     class Meta:
         model = User
-        fields = ('id', 'username' , 'email' , 'password', 'profile')
+        fields = ('id', 'username' , 'email' , 'password', 'profile', 'location')
 
     def create(self, validated_data):
         profile_data = validated_data.pop('profile')
@@ -37,13 +43,19 @@ class UserSerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model= Event
-        fields = ('team1', 'team2', 'time', 'score1' , 'score2' , 'group')
+        fields = ('team1', 'team2', 'time', 'score1', 'score2', 'group')
 
 class MemberSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False)
     class Meta:
         model = Member
         fields = ('user', 'group', 'admin')
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ('user', 'group', 'description', 'time')
+
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
