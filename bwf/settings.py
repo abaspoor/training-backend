@@ -75,8 +75,11 @@ TEMPLATES = [
 WSGI_APPLICATION = 'bwf.wsgi.application'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000"
+    "http://localhost:3000",
     ]
+CORS_ALLOW_HEADERS=[
+    'Content-Type',
+]
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
