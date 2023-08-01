@@ -41,7 +41,7 @@ class Member(models.Model):
 
 
 class Comment(models.Model):
-    group = models.ForeignKey(Group,related_name='comments', on_delete=models.CASCADE)
-    user = models.ForeignKey(Group, related_name='user_comments', on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, related_name='comments', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='user_comments', on_delete=models.CASCADE)
     description = models.CharField(max_length=256,null=False, unique=False)
     time = models.DateTimeField(auto_now_add=True)
