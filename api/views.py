@@ -5,8 +5,9 @@ from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
-from .models import Group, Event, UserProfile, Member, Comment
-from .serielizers import GroupSerializer, EventSerializer, GroupFullSerializer, UserSerializer, UserProfileSerializer, ChangePasswordSerializer, MemberSerializer, CommentSerializer
+from .models import Group, Event, UserProfile, Member, Comment, Bet
+from .serielizers import GroupSerializer, EventSerializer, GroupFullSerializer, UserSerializer, UserProfileSerializer, ChangePasswordSerializer, MemberSerializer, CommentSerializer,EventFullSerializer
+from .serielizers import BetSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 
@@ -14,8 +15,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticate
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (AllowAny,)
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [AllowAny]
 
     @action(methods=['PUT'], detail=True, serializer_class=ChangePasswordSerializer,
             permission_classes=[IsAuthenticated])
@@ -38,6 +39,8 @@ class UserProfileViewset(viewsets.ModelViewSet):
 class CommentViewset(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
 
 
@@ -58,6 +61,10 @@ class EventViewset(viewsets.ModelViewSet):
     serializer_class = EventSerializer
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = EventFullSerializer(instance, many=False, context={'request': request})
+        return Response(serializer.data)
 
 
 class MemberViewset(viewsets.ModelViewSet):
@@ -111,3 +118,10 @@ class CustomObtainAuthTooken(ObtainAuthToken):
         user = User.objects.get(id=token.user_id)
         userSerilizer = UserSerializer(user, many=False)
         return Response({'token': token.key, 'user': userSerilizer.data})
+
+
+class BetViewset(viewsets.ModelViewSet):
+    queryset = Bet.objects.all()
+    serializer_class = BetSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)

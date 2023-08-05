@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
-from .models import Group, Event, UserProfile, Member, Comment, Location
+from .models import Group, Event, UserProfile, Member, Comment, Location,Bet
 from django.contrib.auth.models import User
 import re
 
@@ -46,11 +46,23 @@ class UserSerializer(serializers.ModelSerializer):
             ret.pop('password', None)
         return ret
 
+# ///////////////////////////////////
 
+class BetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bet
+        fields = ('id', 'user', 'event', 'score1', 'score2')
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = ('team1', 'team2', 'time', 'score1', 'score2', 'group')
+        fields = ('id','team1', 'team2', 'time')
+
+
+class EventFullSerializer(serializers.ModelSerializer):
+    bets = BetSerializer(many=True)
+    class Meta:
+        model = Event
+        fields = ('id','team1', 'team2', 'time', 'score1', 'score2', 'group', 'bets')
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -59,8 +71,6 @@ class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = ('user', 'group', 'admin')
-
-
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
