@@ -75,7 +75,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'bwf.wsgi.application'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4218",
+    "http://localhost:3000",
     ]
 CORS_ALLOW_HEADERS=[
     'Content-Type',

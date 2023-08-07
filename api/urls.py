@@ -1,5 +1,5 @@
 from . import views
-from .views import GroupViewset , EventViewset, UserViewSet, UserProfileViewset, MemberViewset, CommentViewset
+from .views import GroupViewset , EventViewset, UserViewSet, UserProfileViewset, MemberViewset, CommentViewset, BetViewset
 from django.conf.urls import include
 from rest_framework import routers
 from django.urls import path,re_path
@@ -12,6 +12,7 @@ router.register(r'users', UserViewSet)
 router.register(r'profile', UserProfileViewset)
 router.register(r'members', MemberViewset)
 router.register(r'comments', CommentViewset)
+router.register(r'bets', BetViewset)
 
 urlpatterns = [
     re_path(r'^', include(router.urls)),

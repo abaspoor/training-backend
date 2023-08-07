@@ -1,3 +1,4 @@
+import pytz
 from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -6,10 +7,12 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from .models import Group, Event, UserProfile, Member, Comment, Bet
-from .serielizers import GroupSerializer, EventSerializer, GroupFullSerializer, UserSerializer, UserProfileSerializer, ChangePasswordSerializer, MemberSerializer, CommentSerializer,EventFullSerializer
+from .serielizers import GroupSerializer, EventSerializer, GroupFullSerializer, UserSerializer, UserProfileSerializer, \
+    ChangePasswordSerializer, MemberSerializer, CommentSerializer, EventFullSerializer
 from .serielizers import BetSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
+from datetime import datetime
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -32,16 +35,17 @@ class UserViewSet(viewsets.ModelViewSet):
                 user.save()
                 return Response({'message': 'Password Updated'}, status.HTTP_200_OK)
 
+
 class UserProfileViewset(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
+
 
 class CommentViewset(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
-
 
 
 class GroupViewset(viewsets.ModelViewSet):
@@ -61,6 +65,7 @@ class EventViewset(viewsets.ModelViewSet):
     serializer_class = EventSerializer
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = EventFullSerializer(instance, many=False, context={'request': request})
@@ -125,3 +130,51 @@ class BetViewset(viewsets.ModelViewSet):
     serializer_class = BetSerializer
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
+
+    def create(self, request, *args, **kwargs):
+        response = {"message": "method not allowed"}
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        response = {"message": "method not allowed"}
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['POST'], url_path='place_bet')
+    def place_bet(self, request):
+        if 'event' in request.data and 'score1' in request.data and 'score2' in request.data:
+            event_id = request.data['event']
+            event = Event.objects.get(id=event_id)
+
+            #check if user in group
+            in_group = self.checkIfUserInGroup(event,request.user)
+
+            if event.time > datetime.now(pytz.UTC) and in_group:
+                score1 = request.data['score1']
+                score2 = request.data['score2']
+                try:
+                    # update scenario
+                    my_bet = Bet.objects.get(event=event_id, user=request.user.id)
+                    my_bet.score1 = score1
+                    my_bet.score2 = score2
+                    my_bet.save()
+                    serializer = BetSerializer(my_bet, many=False)
+                    response = {"message": "bet Updated", "new": False, "result": serializer.data}
+                    return Response(response, status=status.HTTP_200_OK)
+                except:
+                    # create scenario
+                    my_bet = Bet.objects.create(event=event, user=request.user, score1=score1, score2=score2)
+                    serializer = BetSerializer(my_bet, many=False)
+                    response = {"message": "bet Created", "new": True, "result": serializer.data}
+                    return Response(response, status=status.HTTP_200_OK)
+
+            else:
+                response = {"message": "You Cant place bet. too late"}
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            response = {"message": "wrond params"}
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+    def checkIfUserInGroup(self,event,user):
+        try:
+            return Member.objects.get(user=user, group=event.group)
+        except:
+            return False

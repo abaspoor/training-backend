@@ -49,6 +49,7 @@ class UserSerializer(serializers.ModelSerializer):
 # ///////////////////////////////////
 
 class BetSerializer(serializers.ModelSerializer):
+    user = UserSerializer(many=False)
     class Meta:
         model = Bet
         fields = ('id', 'user', 'event', 'score1', 'score2')
