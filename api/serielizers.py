@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from .models import Group, Event, UserProfile, Member, Comment, Location,Bet
 from django.contrib.auth.models import User
+from django.db.models import Sum
 import re
 
 
@@ -52,7 +53,7 @@ class BetSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False)
     class Meta:
         model = Bet
-        fields = ('id', 'user', 'event', 'score1', 'score2')
+        fields = ('id', 'user', 'event', 'score1', 'score2', 'points')
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
@@ -62,9 +63,17 @@ class EventSerializer(serializers.ModelSerializer):
 
 class EventFullSerializer(serializers.ModelSerializer):
     bets = BetSerializer(many=True)
+    is_admin = serializers.SerializerMethodField()
     class Meta:
         model = Event
-        fields = ('id','team1', 'team2', 'time', 'score1', 'score2', 'group', 'bets')
+        fields = ('id','team1', 'team2', 'time', 'score1', 'score2', 'group', 'bets', 'is_admin')
+    def get_is_admin(self,obj):
+        try:
+            user = self.context['request'].user
+            member = Member.objects.get(group=obj.group, user=user)
+            return member.admin
+        except:
+            return None
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -103,10 +112,10 @@ class GroupFullSerializer(serializers.ModelSerializer):
         people_points = []
         members = obj.members.all()
         for member in members:
-            points = 0
+            points = Bet.objects.filter(event__group=obj, user=member.user.id).aggregate(pts=Sum('points'))
             member_serialized = MemberSerializer(member, many=False)
             member_data = member_serialized.data
-            member_data['points'] = points
+            member_data['points'] = points['pts'] or 0
             people_points.append(member_data)
 
         return people_points
