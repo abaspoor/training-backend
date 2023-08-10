@@ -57,6 +57,7 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ('id','team1', 'team2', 'time', 'group')
+#         saaadfas
 
 
 class EventFullSerializer(serializers.ModelSerializer):
