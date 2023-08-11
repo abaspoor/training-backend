@@ -3,6 +3,7 @@ from rest_framework.authtoken.models import Token
 from .models import Group, Event, UserProfile, Member, Comment, Location,Bet
 from django.contrib.auth.models import User
 from django.db.models import Sum
+from django.utils import timezone
 import re
 
 
@@ -58,15 +59,16 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ('id','team1', 'team2', 'time', 'group')
-#         saaadfasgfhfghfgh
+
 
 
 class EventFullSerializer(serializers.ModelSerializer):
-    bets = BetSerializer(many=True)
+    bets = serializers.SerializerMethodField()
     is_admin = serializers.SerializerMethodField()
+    number_bets = serializers.SerializerMethodField()
     class Meta:
         model = Event
-        fields = ('id','team1', 'team2', 'time', 'score1', 'score2', 'group', 'bets', 'is_admin')
+        fields = ('id','team1', 'team2', 'time', 'score1', 'score2', 'group', 'bets', 'is_admin', 'number_bets')
     def get_is_admin(self,obj):
         try:
             user = self.context['request'].user
@@ -74,7 +76,17 @@ class EventFullSerializer(serializers.ModelSerializer):
             return member.admin
         except:
             return None
-
+    def get_bets(self,obj):
+        if obj.time < timezone.now():
+            bets = Bet.objects.filter(event=obj)
+        else:
+            user = self.context['request'].user
+            bets = Bet.objects.filter(event=obj,user=user)
+        serializer = BetSerializer(bets,many=True)
+        return serializer.data
+    def get_number_bets(self,obj):
+        no_bets = Bet.objects.filter(event=obj).count()
+        return no_bets
 
 class MemberSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False)
@@ -91,7 +103,7 @@ class CommentSerializer(serializers.ModelSerializer):
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
-        fields = ('id', 'name', 'location', 'description')
+        fields = ('id', 'name', 'location', 'description', 'num_members')
 
 
 class GroupFullSerializer(serializers.ModelSerializer):

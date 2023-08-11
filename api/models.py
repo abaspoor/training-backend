@@ -22,6 +22,9 @@ class Group(models.Model):
     class Meta:
         unique_together = (('name','location'))
 
+    def num_members(self):
+        return Member.objects.filter(group=self).count()
+
 class Event(models.Model):
     team1 = models.CharField(max_length=32 , blank= False)
     team2 = models.CharField(max_length=32, blank=False)
